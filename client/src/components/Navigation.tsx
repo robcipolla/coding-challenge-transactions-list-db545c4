@@ -3,6 +3,9 @@ import Onboard, { WalletState } from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
 
 import SendTransaction from "./SendTransaction";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/reducers";
+import { Actions } from "../types";
 
 const injected = injectedModule();
 
@@ -19,7 +22,8 @@ const onboard = Onboard({
 });
 
 const Navigation: React.FC = () => {
-  const [wallet, setWallet] = useState<WalletState>();
+  const senderAddress = useSelector((state: RootState) => state.senderAddress);
+  const dispatch = useDispatch();
 
   const handleConnect = useCallback(async () => {
     const wallets = await onboard.connectWallet();
@@ -30,9 +34,12 @@ const Navigation: React.FC = () => {
       metamaskWallet.label === "MetaMask" &&
       metamaskWallet.accounts[0].address
     ) {
-      setWallet(metamaskWallet);
+      dispatch({
+        type: Actions.updateSenderAddress,
+        payload: metamaskWallet.accounts[0].address,
+      });
     }
-  }, []);
+  }, [dispatch]);
 
   return (
     <header className="flex flex-wrap sm:justify-start sm:flex-nowrap z-50 w-ful text-sm py-4 bg-gray-800">
@@ -47,15 +54,15 @@ const Navigation: React.FC = () => {
         </div>
         <div className="hs-collapse overflow-hidden transition-all duration-300 basis-full grow sm:block">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-end sm:mt-0 sm:pl-5">
-            {wallet && (
+            {senderAddress && (
               <>
                 <SendTransaction />
                 <p className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border-2 border-gray-200 font-semibold text-gray-200 text-sm">
-                  {wallet.accounts[0].address}
+                  {senderAddress}
                 </p>
               </>
             )}
-            {!wallet && (
+            {!senderAddress && (
               <button
                 type="button"
                 onClick={handleConnect}

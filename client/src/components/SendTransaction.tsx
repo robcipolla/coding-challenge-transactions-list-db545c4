@@ -46,8 +46,6 @@ const SendTransaction: React.FC = () => {
 
   const onSubmit = (data: any) => console.log(data);
 
-  console.log(errors);
-
   const handleDispatch = useCallback(() => {
     dispatch({
       type: Actions.SendTransaction,

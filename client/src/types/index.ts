@@ -29,6 +29,6 @@ export type Action<P> = {
 };
 
 export enum Actions {
+  updateSenderAddress = "UPDATE_SENDER_ADDRESS",
   SendTransaction = "SEND_TRANSACTION",
 }
-
