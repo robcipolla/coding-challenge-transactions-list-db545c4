@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from "react";
-import Onboard, { WalletState } from "@web3-onboard/core";
+import Onboard from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
+import React, { useCallback } from "react";
 
-import SendTransaction from "./SendTransaction";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/reducers";
 import { Actions } from "../types";
+import SendTransaction from "./SendTransaction";
 
 const injected = injectedModule();
 

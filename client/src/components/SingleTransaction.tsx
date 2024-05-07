@@ -39,8 +39,6 @@ const SingleTransaction: React.FC<SingleTransactionProps> = ({ id }) => {
 
   const { hash, to, from, value } = data?.getTransaction || {};
 
-  // const formattedValue = value ? formatEther(parseInt(value)) : "";
-
   return (
     <div>
       <div className="flex flex-col mt-20">

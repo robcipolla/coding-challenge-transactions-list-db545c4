@@ -26,6 +26,11 @@ const reducer = (state = initialState, action: any): RootState => {
         ...state,
         senderAddress: action.payload,
       };
+    case Actions.UpdateTransactions:
+      return {
+        ...state,
+        transactions: [...state.transactions, ...action.payload],
+      };
     default:
       return state;
   }

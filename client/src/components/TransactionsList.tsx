@@ -1,13 +1,37 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useQuery } from "@apollo/client";
 import { GetAllTransactions } from "../queries";
-import { TransactionsData } from "../types";
+import { Actions, TransactionsData } from "../types";
 import { navigate } from "./NaiveRouter";
 import { formatEther } from "ethers";
+import { useDispatch, useSelector } from "react-redux";
+
+interface Transaction {
+  gasLimit: string;
+  gasPrice: string;
+  to: string;
+  from: string;
+  value: string;
+  data?: string;
+  chainId: string;
+  hash: string;
+}
 
 const TransactionList: React.FC = () => {
+  const dispatch = useDispatch();
   const { loading, error, data } =
     useQuery<TransactionsData>(GetAllTransactions);
+
+  useEffect(() => {
+    if (!data) return;
+
+    dispatch({
+      type: Actions.UpdateTransactions,
+      payload: data?.getAllTransactions,
+    });
+  }, [data, dispatch]);
+
+  const transactions = useSelector((state: any) => state.transactions);
 
   const handleNavigate = (hash: string) => navigate(`/transaction/${hash}`);
 
@@ -35,9 +59,9 @@ const TransactionList: React.FC = () => {
     <div className="flex flex-col mt-20">
       <div className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
         <div className="p-1.5 min-w-full inline-block align-middle">
-          {!!data?.getAllTransactions?.length ? (
+          {!!transactions?.length ? (
             <>
-              {data.getAllTransactions.map(({ hash, to, from, value }) => {
+              {transactions.map(({ hash, to, from, value }: Transaction) => {
                 const formattedValue = formatEther(BigInt(value));
                 return (
                   <div
