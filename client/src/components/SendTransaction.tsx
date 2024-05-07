@@ -1,18 +1,57 @@
 import React, { useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { useForm } from "react-hook-form";
+import { Resolver, useForm } from "react-hook-form";
 
 import { Actions } from "../types";
 
+interface FormValues {
+  sender?: string;
+  recipient?: string;
+  amount?: number;
+}
+
+const resolver: Resolver<FormValues> = async (values) => {
+  const errors: Record<string, { message: string; type: string }> = {};
+
+  if (!values.sender) {
+    errors.sender = { type: "required", message: "Sender is required" };
+  }
+
+  if (!values.recipient) {
+    errors.recipient = { type: "required", message: "Recipient is required" };
+  }
+
+  if (values.amount === undefined) {
+    errors.amount = { type: "required", message: "Amount is required" };
+  } else if (values.amount <= 0) {
+    errors.amount = {
+      type: "invalid",
+      message: "Amount must be greater than 0",
+    };
+  }
+
+  return {
+    values: values,
+    errors: Object.keys(errors).length > 0 ? errors : {},
+  };
+};
+
 const SendTransaction: React.FC = () => {
   const dispatch = useDispatch();
-  const { handleSubmit } = useForm();
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm({ resolver });
 
   const onSubmit = (data: any) => console.log(data);
+
+  console.log(errors);
 
   const handleDispatch = useCallback(() => {
     dispatch({
       type: Actions.SendTransaction,
+      payload: {},
     });
   }, [dispatch]);
 
@@ -68,12 +107,15 @@ const SendTransaction: React.FC = () => {
                   Sender:
                 </label>
                 <input
+                  {...register("sender", { required: true })}
                   type="text"
                   id="input-sender"
-                  className="opacity-70 pointer-events-none py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
+                  className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Sender Address (Autocompleted)"
-                  disabled
                 />
+                <div className="text-red-500 text-sm">
+                  {errors.sender && errors.sender.message}
+                </div>
                 <label
                   htmlFor="input-recipient"
                   className="block text-sm font-bold my-2"
@@ -81,12 +123,15 @@ const SendTransaction: React.FC = () => {
                   Recipient:
                 </label>
                 <input
+                  {...register("recipient", { required: true })}
                   type="text"
                   id="input-recipient"
-                  className="opacity-70 pointer-events-none py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
+                  className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Recipient Address"
-                  disabled
                 />
+                <div className="text-red-500 text-sm">
+                  {errors.recipient && errors.recipient.message}
+                </div>
                 <label
                   htmlFor="input-amount"
                   className="block text-sm font-bold my-2"
@@ -94,12 +139,15 @@ const SendTransaction: React.FC = () => {
                   Amount:
                 </label>
                 <input
+                  {...register("amount", { required: true })}
                   type="number"
                   id="input-amount"
-                  className="opacity-70 pointer-events-none py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
+                  className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Amount"
-                  disabled
                 />
+                <div className="text-red-500 text-sm">
+                  {errors.amount && errors.amount.message}
+                </div>
               </div>
               <div className="flex justify-end items-center gap-x-2 py-3 px-4 border-t">
                 <button
@@ -110,8 +158,7 @@ const SendTransaction: React.FC = () => {
                   Close
                 </button>
                 <button
-                  type="button"
-                  onClick={handleDispatch}
+                  type="submit"
                   className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm"
                 >
                   Send
