@@ -6,6 +6,7 @@ import {
   TransactionReceipt,
   BrowserProvider,
   Signer,
+  parseEther,
 } from "ethers";
 
 import apolloClient from "../apollo/client";
@@ -30,12 +31,13 @@ function* sendTransaction() {
 
   const transaction = {
     to: randomAddress(),
-    value: 1000000000000000000,
+    value: parseEther("1.0"),
   };
 
   try {
-    const txResponse: TransactionResponse =
-      yield signer.sendTransaction(transaction);
+    const txResponse: TransactionResponse = yield signer.sendTransaction(
+      transaction
+    );
     const response: TransactionReceipt = yield txResponse.wait();
 
     const receipt: Transaction = yield response.getTransaction();
@@ -58,7 +60,7 @@ function* sendTransaction() {
       variables,
     });
   } catch (error) {
-    //
+    console.error(error);
   }
 }
 
