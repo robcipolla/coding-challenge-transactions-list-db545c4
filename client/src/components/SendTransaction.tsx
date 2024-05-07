@@ -1,8 +1,10 @@
-import React, { useCallback } from "react";
-import { useDispatch } from "react-redux";
+import React, { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Resolver, useForm } from "react-hook-form";
 
 import { Actions } from "../types";
+import { RootState } from "../store/reducers";
+import { JsonRpcProvider } from "ethers";
 
 interface FormValues {
   sender?: string;
@@ -37,21 +39,52 @@ const resolver: Resolver<FormValues> = async (values) => {
 };
 
 const SendTransaction: React.FC = () => {
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  const transactionStatus = useSelector(
+    (state: RootState) => state.transactionStatus
+  );
+
+  const [accounts, setAccounts] = useState<Array<{ address: string }>>([]);
+
+  useEffect(() => {
+    const provider = new JsonRpcProvider("http://localhost:8545");
+    const fetchAccounts = async () => {
+      const accounts = await provider.listAccounts();
+      setAccounts(accounts);
+    };
+
+    fetchAccounts();
+    if (transactionStatus === "success") {
+      closeButtonRef.current?.click();
+    }
+  }, [transactionStatus]);
+
   const dispatch = useDispatch();
+  const senderAddress = useSelector((state: RootState) => state.senderAddress);
+
   const {
     handleSubmit,
     register,
     formState: { errors },
-  } = useForm({ resolver });
+  } = useForm<FormValues>({
+    resolver,
+    defaultValues: { sender: senderAddress },
+  });
 
-  const onSubmit = (data: any) => console.log(data);
-
-  const handleDispatch = useCallback(() => {
-    dispatch({
-      type: Actions.SendTransaction,
-      payload: {},
-    });
-  }, [dispatch]);
+  const onSubmit = useCallback(
+    (data: FormValues) => {
+      dispatch({
+        type: Actions.SendTransaction,
+        payload: {
+          sender: data.sender,
+          recipient: data.recipient,
+          amount: data.amount,
+        },
+      });
+    },
+    [dispatch]
+  );
 
   return (
     <>
@@ -76,7 +109,9 @@ const SendTransaction: React.FC = () => {
                 <button
                   type="button"
                   className="hs-dropdown-toggle inline-flex flex-shrink-0 justify-center items-center h-8 w-8 rounded-md text-gray-500 hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white transition-all text-sm"
+                  ref={closeButtonRef}
                   data-hs-overlay="#hs-basic-modal"
+                  disabled={transactionStatus === "loading"}
                 >
                   <span className="sr-only">Close</span>
                   <svg
@@ -98,18 +133,28 @@ const SendTransaction: React.FC = () => {
                 <p className="mt-1 mb-6 text-gray-800">
                   Send ETH to a wallet address
                 </p>
+                {transactionStatus === "failure" && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    <strong className="font-bold">Error:</strong>
+                    <span className="block sm:inline">
+                      Something went wrong. Please try again.
+                    </span>
+                  </div>
+                )}
+
                 <label
                   htmlFor="input-sender"
                   className="block text-sm font-bold my-2"
                 >
-                  Sender:
+                  Sender (Autocompleted):
                 </label>
                 <input
                   {...register("sender", { required: true })}
                   type="text"
                   id="input-sender"
-                  className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
+                  className="opacity-70 disabled text-gray-400 cursor-not-allowed py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Sender Address (Autocompleted)"
+                  disabled={true}
                 />
                 <div className="text-red-500 text-sm">
                   {errors.sender && errors.sender.message}
@@ -120,13 +165,18 @@ const SendTransaction: React.FC = () => {
                 >
                   Recipient:
                 </label>
-                <input
+                <select
                   {...register("recipient", { required: true })}
-                  type="text"
                   id="input-recipient"
                   className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
-                  placeholder="Recipient Address"
-                />
+                  disabled={transactionStatus === "loading"}
+                >
+                  {accounts.map((account) => (
+                    <option key={account.address} value={account.address}>
+                      {account.address}
+                    </option>
+                  ))}
+                </select>
                 <div className="text-red-500 text-sm">
                   {errors.recipient && errors.recipient.message}
                 </div>
@@ -142,10 +192,18 @@ const SendTransaction: React.FC = () => {
                   id="input-amount"
                   className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   placeholder="Amount"
+                  disabled={transactionStatus === "loading"}
                 />
                 <div className="text-red-500 text-sm">
                   {errors.amount && errors.amount.message}
                 </div>
+                {transactionStatus === "loading" && (
+                  <div className="text-green-500 mt-4">
+                    Transaction is pending - please check your Metamask
+                    extension to complete the transaction. This modal will
+                    automatically close when it is complete.
+                  </div>
+                )}
               </div>
               <div className="flex justify-end items-center gap-x-2 py-3 px-4 border-t">
                 <button
@@ -159,7 +217,7 @@ const SendTransaction: React.FC = () => {
                   type="submit"
                   className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm"
                 >
-                  Send
+                  {transactionStatus === "loading" ? "Loading..." : "Send"}
                 </button>
               </div>
             </div>

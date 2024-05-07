@@ -5,7 +5,6 @@ import { TransactionsData } from "../types";
 import { navigate } from "./NaiveRouter";
 
 const TransactionList: React.FC = () => {
-
   const { loading, error, data } =
     useQuery<TransactionsData>(GetAllTransactions);
 
@@ -35,6 +34,7 @@ const TransactionList: React.FC = () => {
     <div className="flex flex-col mt-20">
       <div className="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between">
         <div className="p-1.5 min-w-full inline-block align-middle">
+          <pre>{JSON.stringify(data, null, 2)}</pre>
           {!!data?.getAllTransactions?.length ? (
             <>
               {data.getAllTransactions.map(({ hash, to, from, value }) => (
