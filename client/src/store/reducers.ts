@@ -4,6 +4,7 @@ import { Actions } from "../types";
 export interface RootState {
   senderAddress: string | undefined;
   transactionStatus: "pending" | "loading" | "success" | "failure";
+  initialLoad: boolean;
   transactions: any[];
 }
 
@@ -11,6 +12,7 @@ export interface RootState {
 const initialState: RootState = {
   senderAddress: undefined,
   transactionStatus: "pending",
+  initialLoad: false,
   transactions: [],
 };
 
@@ -25,6 +27,12 @@ const reducer = (state = initialState, action: any): RootState => {
       return {
         ...state,
         senderAddress: action.payload,
+      };
+    case Actions.InitializeTransactions:
+      return {
+        ...state,
+        transactions: [...state.transactions, ...action.payload.transactions],
+        initialLoad: action.payload.initialLoad,
       };
     case Actions.UpdateTransactions:
       return {

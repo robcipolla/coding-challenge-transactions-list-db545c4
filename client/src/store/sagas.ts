@@ -57,17 +57,20 @@ function* sendTransaction(action: Action<SendTransactionPayload>) {
 
     yield put({
       type: Actions.UpdateTransactions,
-      payload: {
-        hash: receipt.hash,
-        to: receipt.to,
-        from: receipt.from,
-        value: receipt.value.toString(),
-      },
+      payload: [
+        {
+          hash: receipt.hash,
+          to: receipt.to,
+          from: receipt.from,
+          value: receipt.value.toString(),
+        },
+      ],
     });
     yield put({ type: Actions.UpdateTransactionStatus, payload: "success" });
 
     navigate(`/transaction/${receipt.hash}`);
   } catch (error) {
+    yield put({ type: Actions.UpdateTransactionStatus, payload: "failure" });
     console.error(error);
   }
 }

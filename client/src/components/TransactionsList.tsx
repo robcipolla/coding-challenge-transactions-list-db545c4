@@ -19,17 +19,20 @@ interface Transaction {
 
 const TransactionList: React.FC = () => {
   const dispatch = useDispatch();
+  const initialLoad = useSelector((state: any) => state.initialLoad);
   const { loading, error, data } =
     useQuery<TransactionsData>(GetAllTransactions);
 
   useEffect(() => {
+    if (initialLoad) return;
+
     if (!data) return;
 
     dispatch({
-      type: Actions.UpdateTransactions,
-      payload: data?.getAllTransactions,
+      type: Actions.InitializeTransactions,
+      payload: { transactions: data?.getAllTransactions, initialLoad: true },
     });
-  }, [data, dispatch]);
+  }, [data, dispatch, initialLoad]);
 
   const transactions = useSelector((state: any) => state.transactions);
 

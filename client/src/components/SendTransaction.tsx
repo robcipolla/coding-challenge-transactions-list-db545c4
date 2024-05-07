@@ -171,6 +171,7 @@ const SendTransaction: React.FC = () => {
                   className="opacity-70  py-3 px-4 block bg-gray-50 border-gray-800 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 w-full"
                   disabled={transactionStatus === "loading"}
                 >
+                  <option value="">Select recipient</option>
                   {accounts.map((account) => (
                     <option key={account.address} value={account.address}>
                       {account.address}

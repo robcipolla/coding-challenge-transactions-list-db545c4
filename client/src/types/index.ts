@@ -33,4 +33,5 @@ export enum Actions {
   SendTransaction = "SEND_TRANSACTION",
   UpdateTransactions = "UPDATE_TRANSACTIONS",
   UpdateTransactionStatus = "UPDATE_TRANSACTION_STATUS",
+  InitializeTransactions = "INITIALIZE_TRANSACTIONS",
 }
